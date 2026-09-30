@@ -20,10 +20,44 @@ export const saveDay = day => put('days', { ...day, updatedAt: Date.now() });
 export const saveTemplate = template => put('templates', template);
 export const getTemplates = () => all('templates');
 export const getSessions = async date => (await all('sessions')).filter(s => s.date === date);
+export const getAllSessions = () => all('sessions');
 export const saveSession = session => put('sessions', session);
 export const getTimer = () => get('meta', 'timer').then(x => x?.value || null);
 export const saveTimer = timer => put('meta', { id: 'timer', value: timer });
+export async function claimTimer(timer) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('meta', 'readwrite'), store = tx.objectStore('meta');
+    let claimed = false;
+    const request = store.get('timer');
+    request.onsuccess = () => { if (!request.result?.value) { store.put({ id: 'timer', value: clone(timer) }); claimed = true; } };
+    tx.oncomplete = () => { db.close(); resolve(claimed); };
+    tx.onerror = () => { const error = tx.error; db.close(); reject(error); };
+  });
+}
 export async function exportAll() { return { schemaVersion: 1, exportedAt: new Date().toISOString(), templates: await all('templates'), days: await all('days'), sessions: await all('sessions'), timer: await getTimer(), settings: { timezone: 'Asia/Shanghai' } }; }
 export async function replaceAll(data) { for (const s of STORES) await clear(s); for (const x of data.templates || []) await put('templates', x); for (const x of data.days || []) await put('days', x); for (const x of data.sessions || []) await put('sessions', x); if (data.timer) await saveTimer(data.timer); }
 export async function importMerged(data) { const current = await exportAll(); const { mergeBackup } = await import('./model.js'); return replaceAll(mergeBackup(current, data)); }
 export const deleteSession = id => transact('sessions', 'readwrite', s => s.delete(id));
+
+export async function commitTimerSession(timer, session) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['sessions', 'meta'], 'readwrite');
+    const sessions = tx.objectStore('sessions');
+    const meta = tx.objectStore('meta');
+    let existing;
+    const check = sessions.get(session.id);
+    check.onsuccess = () => {
+      existing = check.result;
+      if (!existing) sessions.put(clone(session));
+      const current = meta.get('timer');
+      current.onsuccess = () => {
+        if (current.result?.value?.id === timer.id) meta.put({ id: 'timer', value: null });
+      };
+    };
+    tx.oncomplete = () => { db.close(); resolve(existing || session); };
+    tx.onerror = () => { const error = tx.error; db.close(); reject(error); };
+    tx.onabort = () => { const error = tx.error; db.close(); reject(error); };
+  });
+}

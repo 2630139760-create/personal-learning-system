@@ -35,7 +35,8 @@
 
       <section class="stats" id="stats" aria-label="今日进度"></section>
       <div id="banner" class="banner hidden" role="status"></div>
-      <section class="schedule-head"><div><h2>时间表</h2><p>按实际时间排列 · 北京时间</p></div><button class="text-btn" id="templateBtn">编辑固定模板</button></section>
+      <section id="globalTimer" class="global-timer hidden" aria-live="polite"></section>
+      <section class="schedule-head"><div><h2>时间表</h2><p>按实际时间排列 · 北京时间</p></div><div class="button-row"><button class="text-btn" id="manualBtn">＋ 手动记录</button><button class="text-btn" id="templateBtn">编辑固定模板</button></div></section>
       <section id="schedule" class="schedule" aria-live="polite"></section>
     </main>
 
@@ -63,11 +64,19 @@
     <p class="muted">这里修改的是固定模板，不是当前已生成的当天计划。历史计划、完成状态和练习记录不会改变。</p>
     <div id="templateTasks" class="template-tasks"></div>
     <button class="secondary" type="button" id="addTemplateTask">＋ 新增模板安排</button>
-    <div class="template-save"><label>编辑完成后选择生效日期<input type="date" name="effectiveDate" required /></label><p class="warning">仅用于生效日起尚未生成的计划；已生成的当天或未来计划不会被静默覆盖。</p></div>
+    <div class="template-save"><label>模板生效日期<input type="date" name="effectiveDate" required /></label><label class="apply-current"><input type="checkbox" name="applyCurrent" /> <span>同时应用到当前查看日期 <b id="applyDateLabel"></b></span></label><p class="warning">新模板自动用于生效范围内尚未生成的计划。勾选后会立即更新指定日期；若当天有单独新增或修改，保存前会说明冲突并再次确认。</p></div>
     <div class="dialog-actions sticky-actions"><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default">确认范围并保存模板</button></div>
   </form></dialog>
 
-  <dialog id="timerConfirmDialog"><div class="dialog-head"><div><p class="eyebrow">计时待确认</p><h2>如何处理本次计时？</h2></div></div><p id="timerConfirmSummary"></p><p class="muted">保存前不会写入练习记录或统计。刷新页面后仍会保留此窗口。</p><div class="dialog-actions confirm-actions"><button class="secondary" id="resumeTimer">返回计时</button><span></span><button class="danger" id="discardTimer">放弃本次</button><button class="primary" id="saveTimerSession">保存记录</button></div></dialog>
+  <dialog id="timerConfirmDialog"><div class="dialog-head"><div><p class="eyebrow">计时待确认</p><h2>如何处理本次计时？</h2></div></div><p id="timerConfirmSummary"></p><p class="muted">保存前不会写入练习记录或统计。刷新页面后仍会保留此窗口。</p><p id="timerSaveError" class="persistent-error hidden" role="alert"></p><div class="dialog-actions confirm-actions"><button class="secondary" id="resumeTimer">返回计时</button><span></span><button class="danger" id="discardTimer">放弃本次</button><button class="primary" id="saveTimerSession">保存记录</button></div></dialog>
+
+  <dialog id="manualDialog"><form id="manualForm">
+    <div class="dialog-head"><div><p class="eyebrow">练习记录</p><h2 id="manualTitle">手动添加练习记录</h2></div><button type="button" class="icon-btn" id="closeManual" aria-label="关闭">×</button></div>
+    <input type="hidden" name="id" /><label>记录日期<input type="date" name="date" required /></label><label>学习模块<select name="module"></select></label><label>关联任务（可选）<select name="taskId"></select></label>
+    <fieldset><legend>实际时长</legend><div class="duration-fields"><label>小时<input type="number" name="hours" min="0" value="0" /></label><label>分钟<input type="number" name="minutes" min="0" max="59" value="0" /></label><label>秒<input type="number" name="seconds" min="0" max="59" value="0" /></label></div></fieldset>
+    <label>备注（可选）<textarea name="note" rows="2"></textarea></label><div id="manualPreview" class="preview"></div><p id="manualError" class="persistent-error hidden" role="alert"></p>
+    <div class="dialog-actions"><span></span><button type="button" class="secondary" id="cancelManual">取消</button><button type="submit" class="primary" id="saveManual">检查并确认</button></div>
+  </form></dialog>
 
   <dialog id="deleteSessionDialog"><div class="dialog-head"><div><p class="eyebrow">删除练习记录</p><h2>确认删除？</h2></div><button class="icon-btn" id="cancelDeleteSessionTop" aria-label="取消删除">×</button></div><p id="deleteSessionSummary"></p><p class="muted">只删除这条练习记录，不会删除计划或改变任务完成状态。</p><div class="dialog-actions"><span></span><button class="secondary" id="cancelDeleteSession">取消</button><button class="danger" id="confirmDeleteSession">确认删除</button></div></dialog>
 
