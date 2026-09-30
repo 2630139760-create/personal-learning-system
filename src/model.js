@@ -40,3 +40,13 @@ export function mergeBackup(current, incoming) {
   const unique = (a, b, key) => [...new Map([...b, ...a].map(x => [x[key], x])).values()];
   return { templates: unique(current.templates, incoming.templates || [], 'id'), days: unique(current.days, incoming.days || [], 'date'), sessions: unique(current.sessions, incoming.sessions || [], 'id'), timer: current.timer || incoming.timer || null, settings: { ...incoming.settings, ...current.settings } };
 }
+
+export function formatDuration(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hours = Math.floor(total / 3600), mins = Math.floor(total % 3600 / 60), secs = total % 60;
+  if (hours) return `${hours}小时${mins ? `${mins}分` : ''}${secs ? `${secs}秒` : ''}`;
+  if (mins) return `${mins}分${secs ? `${secs}秒` : ''}`;
+  return `${secs}秒`;
+}
+export const sortTasks = tasks => [...tasks].sort((a,b) => a.start.localeCompare(b.start));
+export function validTaskTime(task) { return task.kind !== 'range' || Boolean(task.end && task.end > task.start); }
