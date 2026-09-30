@@ -58,12 +58,18 @@
     <div class="dialog-actions"><button class="danger-link hidden" type="button" id="deleteTask">删除任务</button><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default" id="saveTask">保存</button></div>
   </form></dialog>
 
-  <dialog id="templateDialog"><form id="templateForm" method="dialog">
-    <div class="dialog-head"><div><p class="eyebrow">固定模板</p><h2>选择生效日期</h2></div><button class="icon-btn" value="cancel">×</button></div>
-    <p class="muted">将以当前日期的安排作为新模板。新模板只生成生效日及之后尚未建立的计划，不会覆盖过去或已编辑的每日计划。</p>
-    <label>生效日期<input type="date" name="effectiveDate" required /></label>
-    <div class="dialog-actions"><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default">保存新模板</button></div>
+  <dialog id="templateDialog" class="template-dialog"><form id="templateForm" method="dialog">
+    <div class="dialog-head sticky-head"><div><p class="eyebrow">固定模板</p><h2>编辑完整模板时间表</h2></div><button class="icon-btn" value="cancel" aria-label="关闭模板编辑器">×</button></div>
+    <p class="muted">这里修改的是固定模板，不是当前已生成的当天计划。历史计划、完成状态和练习记录不会改变。</p>
+    <div id="templateTasks" class="template-tasks"></div>
+    <button class="secondary" type="button" id="addTemplateTask">＋ 新增模板安排</button>
+    <div class="template-save"><label>编辑完成后选择生效日期<input type="date" name="effectiveDate" required /></label><p class="warning">仅用于生效日起尚未生成的计划；已生成的当天或未来计划不会被静默覆盖。</p></div>
+    <div class="dialog-actions sticky-actions"><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default">确认范围并保存模板</button></div>
   </form></dialog>
+
+  <dialog id="timerConfirmDialog"><div class="dialog-head"><div><p class="eyebrow">计时待确认</p><h2>如何处理本次计时？</h2></div></div><p id="timerConfirmSummary"></p><p class="muted">保存前不会写入练习记录或统计。刷新页面后仍会保留此窗口。</p><div class="dialog-actions confirm-actions"><button class="secondary" id="resumeTimer">返回计时</button><span></span><button class="danger" id="discardTimer">放弃本次</button><button class="primary" id="saveTimerSession">保存记录</button></div></dialog>
+
+  <dialog id="deleteSessionDialog"><div class="dialog-head"><div><p class="eyebrow">删除练习记录</p><h2>确认删除？</h2></div><button class="icon-btn" id="cancelDeleteSessionTop" aria-label="取消删除">×</button></div><p id="deleteSessionSummary"></p><p class="muted">只删除这条练习记录，不会删除计划或改变任务完成状态。</p><div class="dialog-actions"><span></span><button class="secondary" id="cancelDeleteSession">取消</button><button class="danger" id="confirmDeleteSession">确认删除</button></div></dialog>
 
   <dialog id="settingsDialog"><div class="dialog-head"><div><p class="eyebrow">数据与设置</p><h2>本地数据</h2></div><button class="icon-btn" onclick="this.closest('dialog').close()">×</button></div>
     <section class="setting-card"><h3>设备能力</h3><p><b>设备通知尚未启用</b><br><span class="muted">当前只保存提醒开关和时间，关闭页面或锁屏后不会收到通知。</span></p><p><b>跨设备同步后续接入</b><br><span class="muted">目前数据仅保存在此浏览器。</span></p></section>

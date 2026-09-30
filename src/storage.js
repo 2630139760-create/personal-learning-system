@@ -26,3 +26,4 @@ export const saveTimer = timer => put('meta', { id: 'timer', value: timer });
 export async function exportAll() { return { schemaVersion: 1, exportedAt: new Date().toISOString(), templates: await all('templates'), days: await all('days'), sessions: await all('sessions'), timer: await getTimer(), settings: { timezone: 'Asia/Shanghai' } }; }
 export async function replaceAll(data) { for (const s of STORES) await clear(s); for (const x of data.templates || []) await put('templates', x); for (const x of data.days || []) await put('days', x); for (const x of data.sessions || []) await put('sessions', x); if (data.timer) await saveTimer(data.timer); }
 export async function importMerged(data) { const current = await exportAll(); const { mergeBackup } = await import('./model.js'); return replaceAll(mergeBackup(current, data)); }
+export const deleteSession = id => transact('sessions', 'readwrite', s => s.delete(id));
