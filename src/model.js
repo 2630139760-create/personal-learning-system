@@ -24,7 +24,8 @@ export function calculateStats(tasks, sessions) {
     done: study.filter(t => t.status === 'done').length, total: study.length,
     improve: study.filter(t => t.status === 'improve').length,
     planned: study.reduce((n, t) => n + plannedSeconds(t), 0),
-    actual: study.reduce((n, t) => n + taskActualSeconds(t.id, sessions), 0)
+    actual: sessions.filter(s => s.endedAt && STUDY_MODULES.includes(s.module || tasks.find(t => t.id === s.taskId)?.module)).reduce((n, s) => n + s.durationSeconds, 0),
+    sessions: sessions.filter(s => s.endedAt && STUDY_MODULES.includes(s.module || tasks.find(t => t.id === s.taskId)?.module)).length
   };
 }
 export function conflictsFor(candidate, tasks) {
@@ -50,3 +51,20 @@ export function formatDuration(seconds) {
 }
 export const sortTasks = tasks => [...tasks].sort((a,b) => a.start.localeCompare(b.start));
 export function validTaskTime(task) { return task.kind !== 'range' || Boolean(task.end && task.end > task.start); }
+
+export function timerElapsed(timer, now = Date.now()) {
+  if (!timer) return 0;
+  return Math.max(0, Math.floor(Number(timer.accumulatedSeconds) || 0) + (timer.phase === 'active' && timer.runningSince ? Math.max(0, Math.floor((now - timer.runningSince) / 1000)) : 0));
+}
+
+export function applyTemplateToDay(day, templateTasks) {
+  const existing = new Map(day.tasks.map(t => [t.id, t]));
+  return {
+    ...day,
+    tasks: sortTasks(templateTasks.map(source => {
+      const old = existing.get(source.id);
+      return { ...clone(source), status: old?.status || 'todo' };
+    })),
+    templateAppliedAt: Date.now()
+  };
+}
