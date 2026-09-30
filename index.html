@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f5f8" />
+  <title>今日计划 · 个人学习系统</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">知</span><span><b>个人学习</b><small>持续积累，按时生活</small></span></div>
+      <nav aria-label="主要导航">
+        <button class="nav-item active" data-page="today"><span>◉</span> 今日</button>
+        <button class="nav-item" data-later="学习"><span>◇</span> 学习 <small>后续接入</small></button>
+        <button class="nav-item" data-later="账本"><span>□</span> 账本 <small>后续接入</small></button>
+        <button class="nav-item" data-later="日记"><span>◌</span> 日记 <small>后续接入</small></button>
+        <button class="nav-item" id="settingsBtn"><span>⚙</span> 设置</button>
+      </nav>
+      <div class="sync-note"><span class="status-dot"></span><div><b>仅此设备</b><small>跨设备同步后续接入</small></div></div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div><p class="eyebrow" id="weekday">今天</p><h1 id="dateTitle">今日计划</h1></div>
+        <div class="date-actions">
+          <button class="icon-btn" id="prevDay" aria-label="前一天">‹</button>
+          <input id="datePicker" type="date" aria-label="选择日期" />
+          <button class="icon-btn" id="nextDay" aria-label="后一天">›</button>
+          <button class="secondary" id="todayBtn">回到今天</button>
+          <button class="primary" id="addTask">＋ 新增任务</button>
+        </div>
+      </header>
+
+      <section class="stats" id="stats" aria-label="今日进度"></section>
+      <div id="banner" class="banner hidden" role="status"></div>
+      <section class="schedule-head"><div><h2>时间表</h2><p>按实际时间排列 · 北京时间</p></div><button class="text-btn" id="templateBtn">编辑固定模板</button></section>
+      <section id="schedule" class="schedule" aria-live="polite"></section>
+    </main>
+
+    <aside class="detail-panel" id="detailPanel">
+      <div id="detailEmpty" class="detail-empty"><span>↖</span><h2>选择一项任务</h2><p>查看详情、记录状态或开始学习计时</p></div>
+      <div id="detail" class="hidden"></div>
+    </aside>
+  </div>
+
+  <dialog id="taskDialog"><form id="taskForm" method="dialog">
+    <div class="dialog-head"><div><p class="eyebrow" id="formMode">当天安排</p><h2 id="formTitle">新增任务</h2></div><button class="icon-btn" value="cancel" aria-label="关闭">×</button></div>
+    <input type="hidden" name="id" />
+    <label>任务名称<input name="title" required maxlength="40" /></label>
+    <div class="form-row"><label>所属模块<select name="module"><option>生活</option><option>化妆</option><option>剪辑</option><option>调色</option><option>英语／雅思</option><option>AI</option><option>拍摄</option></select></label><label>事项类型<select name="kind"><option value="range">时间段</option><option value="point">时间点</option><option value="open">无固定结束</option></select></label></div>
+    <div class="form-row"><label>开始时间<input name="start" type="time" required /></label><label>结束时间<input name="end" type="time" /></label></div>
+    <label id="choiceWrap" class="hidden">当日选择<select name="choice"></select></label>
+    <label>备注<textarea name="note" rows="3" placeholder="可填写学习内容或生活安排"></textarea></label>
+    <label class="switch-row"><span><b>到点提醒</b><small>仅保存设置，设备通知尚未启用</small></span><input name="reminder" type="checkbox" /></label>
+    <div id="conflicts" class="warning hidden"></div>
+    <div class="dialog-actions"><button class="danger-link hidden" type="button" id="deleteTask">删除任务</button><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default" id="saveTask">保存</button></div>
+  </form></dialog>
+
+  <dialog id="templateDialog"><form id="templateForm" method="dialog">
+    <div class="dialog-head"><div><p class="eyebrow">固定模板</p><h2>选择生效日期</h2></div><button class="icon-btn" value="cancel">×</button></div>
+    <p class="muted">将以当前日期的安排作为新模板。新模板只生成生效日及之后尚未建立的计划，不会覆盖过去或已编辑的每日计划。</p>
+    <label>生效日期<input type="date" name="effectiveDate" required /></label>
+    <div class="dialog-actions"><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default">保存新模板</button></div>
+  </form></dialog>
+
+  <dialog id="settingsDialog"><div class="dialog-head"><div><p class="eyebrow">数据与设置</p><h2>本地数据</h2></div><button class="icon-btn" onclick="this.closest('dialog').close()">×</button></div>
+    <section class="setting-card"><h3>设备能力</h3><p><b>设备通知尚未启用</b><br><span class="muted">当前只保存提醒开关和时间，关闭页面或锁屏后不会收到通知。</span></p><p><b>跨设备同步后续接入</b><br><span class="muted">目前数据仅保存在此浏览器。</span></p></section>
+    <section class="setting-card"><h3>数据备份</h3><p class="muted">导出包含模板、每日任务和计时记录。导入前会让你选择合并或替换，不会静默覆盖。</p><div class="button-row"><button class="secondary" id="exportBtn">导出 JSON</button><label class="secondary file-btn">选择备份文件<input id="importFile" type="file" accept="application/json" /></label></div><div id="importChoice" class="hidden import-choice"><b>已读取备份。如何恢复？</b><div class="button-row"><button class="secondary" id="mergeImport">合并（推荐）</button><button class="danger" id="replaceImport">替换全部</button></div></div></section>
+    <section class="setting-card"><h3>排序规则（独立保存）</h3><p><b>执行优先级</b><br><span class="muted">化妆 ＞ 剪辑与调色 ＞ 英语／雅思 ＞ AI ＞ 拍摄</span></p><p><b>长期掌握深度</b><br><span class="muted">AI ＞ 调色 ＞ 化妆 ＞ 英语 ＞ 剪辑 ＞ 拍摄</span></p><p class="muted">时间表始终按实际时间排列，不会按优先级重排。</p></section>
+  </dialog>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
