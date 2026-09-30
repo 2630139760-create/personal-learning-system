@@ -1,4 +1,4 @@
-import { clone, INITIAL_TASKS } from './model.js';
+import { clone, INITIAL_TASKS } from './model.js?v=20260930-hotfix';
 const DB_NAME = 'personal-learning-system';
 const DB_VERSION = 1;
 const STORES = ['templates', 'days', 'sessions', 'meta'];
