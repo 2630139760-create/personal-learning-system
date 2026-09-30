@@ -61,10 +61,10 @@
 
   <dialog id="templateDialog" class="template-dialog"><form id="templateForm" method="dialog">
     <div class="dialog-head sticky-head"><div><p class="eyebrow">固定模板</p><h2>编辑完整模板时间表</h2></div><button class="icon-btn" value="cancel" aria-label="关闭模板编辑器">×</button></div>
-    <p class="muted">这里修改的是固定模板，不是当前已生成的当天计划。历史计划、完成状态和练习记录不会改变。</p>
+    <p class="muted">生效日期默认是主页当前查看的日期。保存会更新生效范围内的时间表，同时保留完成状态、练习记录和计时关联。</p>
     <div id="templateTasks" class="template-tasks"></div>
     <button class="secondary" type="button" id="addTemplateTask">＋ 新增模板安排</button>
-    <div class="template-save"><label>模板生效日期<input type="date" name="effectiveDate" required /></label><label class="apply-current"><input type="checkbox" name="applyCurrent" /> <span>同时应用到当前查看日期 <b id="applyDateLabel"></b></span></label><p class="warning">新模板自动用于生效范围内尚未生成的计划。勾选后会立即更新指定日期；若当天有单独新增或修改，保存前会说明冲突并再次确认。</p></div>
+    <div class="template-save"><label>模板生效日期<input type="date" name="effectiveDate" required /></label><p class="warning"><b>将从该日期起使用新模板，并更新该日期的时间表。</b><br>已生成且未单独修改的计划也会同步；遇到单独修改时，保存过程会说明冲突并让你选择。</p><div id="templateImpact" class="preview"></div></div>
     <div class="dialog-actions sticky-actions"><span></span><button class="secondary" value="cancel">取消</button><button class="primary" value="default">确认范围并保存模板</button></div>
   </form></dialog>
 
@@ -85,6 +85,6 @@
     <section class="setting-card"><h3>数据备份</h3><p class="muted">导出包含模板、每日任务和计时记录。导入前会让你选择合并或替换，不会静默覆盖。</p><div class="button-row"><button class="secondary" id="exportBtn">导出 JSON</button><label class="secondary file-btn">选择备份文件<input id="importFile" type="file" accept="application/json" /></label></div><div id="importChoice" class="hidden import-choice"><b>已读取备份。如何恢复？</b><div class="button-row"><button class="secondary" id="mergeImport">合并（推荐）</button><button class="danger" id="replaceImport">替换全部</button></div></div></section>
     <section class="setting-card"><h3>排序规则（独立保存）</h3><p><b>执行优先级</b><br><span class="muted">化妆 ＞ 剪辑与调色 ＞ 英语／雅思 ＞ AI ＞ 拍摄</span></p><p><b>长期掌握深度</b><br><span class="muted">AI ＞ 调色 ＞ 化妆 ＞ 英语 ＞ 剪辑 ＞ 拍摄</span></p><p class="muted">时间表始终按实际时间排列，不会按优先级重排。</p></section>
   </dialog>
-  <script type="module" src="./src/app.js?v=20260930-hotfix" onerror="const banner=document.getElementById('banner');banner.className='banner error';banner.innerHTML='页面脚本加载失败，请检查网络后重试。 <button type=&quot;button&quot; onclick=&quot;location.reload()&quot;>重新加载</button>'"></script>
+  <script type="module" src="./src/app.js?v=20260930-template-sync" onerror="const banner=document.getElementById('banner');banner.className='banner error';banner.innerHTML='页面脚本加载失败，请检查网络后重试。 <button type=&quot;button&quot; onclick=&quot;location.reload()&quot;>重新加载</button>'"></script>
 </body>
 </html>

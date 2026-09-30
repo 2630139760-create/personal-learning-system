@@ -17,6 +17,8 @@ export async function initialize(today) {
 }
 export async function getDay(date, template) { let day = await get('days', date); if (!day) { day = { date, templateId: template.id, tasks: clone(template.tasks), createdAt: Date.now(), updatedAt: Date.now() }; await put('days', day); } return day; }
 export const saveDay = day => put('days', { ...day, updatedAt: Date.now() });
+export const getDays = () => all('days');
+export async function saveDays(days) { for (const day of days) await saveDay(day); }
 export const saveTemplate = template => put('templates', template);
 export const getTemplates = () => all('templates');
 export const getSessions = async date => (await all('sessions')).filter(s => s.date === date);

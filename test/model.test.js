@@ -9,4 +9,29 @@ test('秒级时长不会把不足一分钟强制显示成一分钟', async()=>{c
 test('普通时间段要求结束晚于开始，时间点允许没有结束', async()=>{const {validTaskTime,sortTasks}=await import('../src/model.js');assert.equal(validTaskTime({kind:'range',start:'10:00',end:'09:00'}),false);assert.equal(validTaskTime({kind:'point',start:'06:55',end:''}),true);assert.deepEqual(sortTasks([{start:'10:00'},{start:'06:55'}]).map(x=>x.start),['06:55','10:00']);});
 test('运行计时按时间戳恢复，暂停和待确认期间不增加',()=>{const base={accumulatedSeconds:25,runningSince:1000,phase:'active'};assert.equal(timerElapsed(base,6500),30);assert.equal(timerElapsed({...base,runningSince:null},999999),25);assert.equal(timerElapsed({...base,phase:'pending'},999999),25);});
 test('手动秒级记录和系统记录共同计入次数与时长',()=>{const tasks=[{id:'a',module:'AI',kind:'point',start:'09:00',status:'todo'}],sessions=[{id:'m',source:'manual',module:'AI',endedAt:1,durationSeconds:1530},{id:'t',source:'timer',taskId:'a',endedAt:2,durationSeconds:7}];const stats=calculateStats(tasks,sessions);assert.equal(stats.actual,1537);assert.equal(stats.sessions,2);});
-test('应用模板保留仍对应任务的完成状态但不携带已删除安排',()=>{const day={date:'2026-10-01',tasks:[{id:'keep',title:'旧名',start:'09:00',status:'done'},{id:'custom',title:'单独任务',start:'10:00',status:'improve'}]};const updated=applyTemplateToDay(day,[{id:'keep',title:'新名',start:'08:00',status:'todo'},{id:'new',title:'新增',start:'11:00',status:'done'}]);assert.deepEqual(updated.tasks.map(t=>[t.id,t.status]),[['keep','done'],['new','todo']]);});
+test('应用模板保留对应任务和被移除任务的完成状态',()=>{const day={date:'2026-10-01',tasks:[{id:'keep',title:'旧名',start:'09:00',status:'done'},{id:'custom',title:'单独任务',start:'10:00',status:'improve'}]};const updated=applyTemplateToDay(day,[{id:'keep',title:'新名',start:'08:00',status:'todo'},{id:'new',title:'新增',start:'11:00',status:'done'}]);assert.deepEqual(updated.tasks.map(t=>[t.id,t.status]),[['keep','done'],['custom','improve'],['new','todo']]);});
+
+test('模板更新合并到已生成计划并保留完成状态与用户单独修改', async()=>{
+  const {reconcileTemplateDay}=await import('../src/model.js');
+  const previous=[{id:'a',title:'旧名称',module:'AI',kind:'range',start:'09:00',end:'10:00',status:'todo'},{id:'b',title:'模板任务',module:'AI',kind:'range',start:'10:00',end:'11:00',status:'todo'}];
+  const day={date:'2026-10-01',templateId:'old',tasks:[{...previous[0],status:'done'},{...previous[1],title:'我的修改',status:'todo'},{id:'mine',title:'单独新增',module:'生活',kind:'point',start:'12:00',end:'',status:'todo'}]};
+  const next=[{...previous[0],title:'新名称',start:'08:30'},{...previous[1],title:'新模板名称',start:'10:30'}];
+  const result=reconcileTemplateDay(day,previous,next);
+  assert.deepEqual(result.day.tasks.find(t=>t.id==='a'),{...next[0],status:'done'});
+  assert.equal(result.day.tasks.find(t=>t.id==='b').title,'我的修改');
+  assert.ok(result.day.tasks.some(t=>t.id==='mine'));
+  assert.equal(result.hasCustomizations,true);
+});
+
+test('移除模板任务时仍保留有完成状态或记录计时关联的任务', async()=>{
+  const {reconcileTemplateDay}=await import('../src/model.js');
+  const prior=[{id:'done',title:'完成过',start:'09:00',status:'todo'},{id:'recorded',title:'有记录',start:'10:00',status:'todo'},{id:'plain',title:'无数据',start:'11:00',status:'todo'}];
+  const day={tasks:[{...prior[0],status:'done'},prior[1],prior[2]]};
+  const result=reconcileTemplateDay(day,prior,[],{preserveCustom:false,protectedIds:['recorded']});
+  assert.deepEqual(result.day.tasks.map(t=>t.id).sort(),['done','recorded']);
+});
+
+test('相同生效日期优先使用刚保存的模板',()=>{
+  const templates=[{id:'old',effectiveDate:'2026-10-01',createdAt:1},{id:'new',effectiveDate:'2026-10-01',createdAt:2}];
+  assert.equal(effectiveTemplate(templates,'2026-10-01').id,'new');
+});

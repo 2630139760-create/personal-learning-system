@@ -34,7 +34,7 @@ export function conflictsFor(candidate, tasks) {
   return tasks.filter(t => t.id !== candidate.id && t.kind === 'range' && t.end && a < minutes(t.end) && b > minutes(t.start));
 }
 export function effectiveTemplate(templates, date) {
-  return [...templates].filter(t => t.effectiveDate <= date).sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate))[0];
+  return [...templates].filter(t => t.effectiveDate <= date).sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate) || (b.createdAt || 0) - (a.createdAt || 0))[0];
 }
 export function mergeBackup(current, incoming) {
   // Load the backup first so an identical local ID wins; merge must never silently overwrite local edits.
@@ -57,14 +57,34 @@ export function timerElapsed(timer, now = Date.now()) {
   return Math.max(0, Math.floor(Number(timer.accumulatedSeconds) || 0) + (timer.phase === 'active' && timer.runningSince ? Math.max(0, Math.floor((now - timer.runningSince) / 1000)) : 0));
 }
 
-export function applyTemplateToDay(day, templateTasks) {
+const TEMPLATE_FIELDS = ['title', 'module', 'kind', 'start', 'end', 'note', 'reminder', 'choice', 'choices'];
+const templateShape = task => Object.fromEntries(TEMPLATE_FIELDS.map(key => [key, task?.[key] ?? (key === 'reminder' ? false : '')]));
+export const taskDiffersFromTemplate = (task, templateTask) => !templateTask || JSON.stringify(templateShape(task)) !== JSON.stringify(templateShape(templateTask));
+
+/** Merge a newer template into a generated day without discarding day-specific work. */
+export function reconcileTemplateDay(day, previousTasks, templateTasks, { preserveCustom = true, protectedIds = [] } = {}) {
   const existing = new Map(day.tasks.map(t => [t.id, t]));
+  const previous = new Map((previousTasks || []).map(t => [t.id, t]));
+  const incoming = new Set(templateTasks.map(t => t.id));
+  const protectedSet = new Set(protectedIds);
+  const customIds = day.tasks.filter(t => taskDiffersFromTemplate(t, previous.get(t.id))).map(t => t.id);
+  const tasks = templateTasks.map(source => {
+    const old = existing.get(source.id);
+    if (old && preserveCustom && customIds.includes(old.id)) return clone(old);
+    return { ...clone(source), status: old?.status || 'todo' };
+  });
+  for (const old of day.tasks) {
+    if (incoming.has(old.id)) continue;
+    const shouldRetain = old.status !== 'todo' || protectedSet.has(old.id) || (preserveCustom && customIds.includes(old.id));
+    if (shouldRetain) tasks.push(clone(old));
+  }
   return {
-    ...day,
-    tasks: sortTasks(templateTasks.map(source => {
-      const old = existing.get(source.id);
-      return { ...clone(source), status: old?.status || 'todo' };
-    })),
-    templateAppliedAt: Date.now()
+    day: { ...day, tasks: sortTasks(tasks), templateAppliedAt: Date.now() },
+    customIds,
+    hasCustomizations: customIds.length > 0
   };
+}
+
+export function applyTemplateToDay(day, templateTasks) {
+  return reconcileTemplateDay(day, [], templateTasks, { preserveCustom: false }).day;
 }
