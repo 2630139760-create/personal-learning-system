@@ -9,3 +9,28 @@
 .global-timer{position:sticky;top:8px;z-index:8;display:flex;align-items:center;gap:16px;margin:0 0 12px;padding:10px 14px;border:1px solid #a9c5f7;border-radius:12px;background:#f3f7ff;box-shadow:0 5px 18px #26395e18}.global-timer div{display:grid;min-width:0;flex:1}.global-timer small{color:var(--muted);margin-top:2px}.global-timer strong{font-variant-numeric:tabular-nums;font-size:20px}.section-title{display:flex!important;align-items:center;justify-content:space-between}.persistent-error{padding:12px;border:1px solid #e7a3a3;border-radius:9px;background:#fff0f0;color:#9d2424;line-height:1.45}.apply-current{display:flex;align-items:center;gap:9px}.apply-current input{width:22px;height:22px}.duration-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}fieldset{border:1px solid var(--line);border-radius:11px;padding:12px}legend{font-size:14px;font-weight:600}.preview{padding:12px;border-radius:9px;background:#f3f7ff;color:#344057;line-height:1.5}#manualDialog form{max-height:min(82vh,760px);overflow:auto;padding:2px}dialog form{max-height:min(86vh,820px);overflow:auto}.dialog-head{position:sticky;top:0;background:#fff;z-index:4;padding-bottom:8px}.dialog-actions{position:sticky;bottom:0;background:#fff;z-index:4;padding-top:10px}
 @media(min-width:901px){.schedule{gap:3px}.task-copy>small{margin-top:3px}.schedule-head{margin-bottom:6px}}
 @media(max-width:600px){.global-timer{flex-wrap:wrap}.global-timer div{flex-basis:55%}.duration-fields{grid-template-columns:1fr 1fr 1fr}}
+
+/* Only the action bar stays visible; long titles and notes scroll underneath. */
+.detail-head{gap:12px}
+.detail-head>div:first-child{min-width:0;overflow-wrap:anywhere}
+.detail-controls{top:env(safe-area-inset-top);justify-content:flex-end;background:#fff;padding-bottom:8px}
+
+/* Forms fit inside the modal padding, including short and dynamic viewports. */
+dialog{max-height:calc(100dvh - 30px - env(safe-area-inset-top) - env(safe-area-inset-bottom));scroll-padding-block:100px 80px}
+.template-dialog{max-height:min(900px,calc(100dvh - 30px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+dialog form{max-height:min(820px,86dvh,calc(100dvh - 78px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));scroll-padding-block:100px 80px}
+#manualDialog form{max-height:min(760px,82dvh,calc(100dvh - 78px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+
+@media(max-width:900px){
+  .app-shell{--compact-nav-height:calc(64px + env(safe-area-inset-bottom))}
+  .sidebar{position:fixed;inset:auto 0 0;height:var(--compact-nav-height);padding-bottom:calc(7px + env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .main-panel{padding-bottom:calc(var(--compact-nav-height) + 26px)}
+  .detail-panel{bottom:var(--compact-nav-height);padding-left:max(26px,env(safe-area-inset-left));padding-right:max(26px,env(safe-area-inset-right))}
+  .banner{top:auto;bottom:calc(var(--compact-nav-height) + 12px);max-width:calc(100vw - 32px)}
+}
+
+/* Short confirmation dialogs need space to read the summary before acting. */
+@media(max-height:500px){
+  dialog:not(:has(form)) .dialog-actions{position:static}
+  .confirm-actions button{flex:1 1 auto}
+}
