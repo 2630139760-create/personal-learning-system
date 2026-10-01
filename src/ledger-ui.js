@@ -1,4 +1,5 @@
-import * as db from './storage.js?v=20261001-ledger';
+import * as db from './storage.js?v=20261001-diary';
+import { activatePage } from './navigation.js?v=20261001-diary';
 import { beijingToday, parseMoney, money, billRange, billStats, budgetStats, fundStats, withRecord, recordWarnings } from './ledger-model.js?v=20261001-ledger';
 
 const $ = s => document.querySelector(s);
@@ -137,9 +138,7 @@ function resetCategoryForm(category = null) {
 async function showLedger() {
   try {
     state.ledger = await db.getLedger();
-    $('#todayPage').classList.add('hidden'); $('#detailPanel').classList.add('hidden'); $('#ledgerPage').classList.remove('hidden');
-    $('#app').classList.add('ledger-mode');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === 'ledger'));
+    await activatePage('ledger');
     render();
   } catch (error) { alert(`账本读取失败：${error.message}。现有数据未改变，请重试。`); }
 }
@@ -161,10 +160,7 @@ export function initLedger() {
     <dialog id="ledgerDepositDialog" class="ledger-dialog"><form id="ledgerDepositForm"><div class="dialog-head"><h2 id="ledgerDepositTitle">记录实际存入</h2>${closeButton}</div><input type="hidden" name="id" /><p class="muted">仅记录已经实际存入小荷包的资金，不计入收入或消费支出。</p>${dateField}<label>资金项目<select name="fundId" required></select></label>${amountField.replace(' aria-describedby="ledgerAmountHint"', '')}${noteField}${actions}</form></dialog>
     <dialog id="ledgerCategoryDialog" class="ledger-dialog"><form id="ledgerCategoryForm"><div class="dialog-head"><h2 id="ledgerCategoryTitle">新增分类</h2>${closeButton}</div><input type="hidden" name="id" /><div class="form-row"><label>收支类型<select name="type"><option value="expense">支出</option><option value="income">收入</option></select></label><label>分类名称<input name="name" required maxlength="30" /></label></div><p class="muted">新分类默认不计入日常预算，每笔支出仍可单独调整。使用中的分类只能改名，不会删除历史记录。</p>${actions}<button type="button" class="text-btn" id="ledgerNewCategory">切换为新增分类</button><div id="ledgerCategoryList"></div></form></dialog>`);
   document.querySelector('[data-page=ledger]').onclick = showLedger;
-  document.querySelector('[data-page=today]').addEventListener('click', () => {
-    $('#ledgerPage').classList.add('hidden'); $('#todayPage').classList.remove('hidden'); $('#detailPanel').classList.remove('hidden'); $('#app').classList.remove('ledger-mode');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === 'today'));
-  });
+  document.querySelector('[data-page=today]').onclick = () => activatePage('today').catch(error => alert(`切换失败：${error.message}`));
   $('#ledgerAddEntry').onclick = () => openRecord('entries');
   $('#ledgerMonth').onchange = e => { if (/^\d{4}-\d{2}$/.test(e.target.value)) { state.month = e.target.value; render(); } };
   ['#ledgerRange', '#ledgerAnchor', '#ledgerStart', '#ledgerEnd'].forEach(s => $(s).onchange = renderBills);

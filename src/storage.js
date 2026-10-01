@@ -1,5 +1,6 @@
-import { clone, INITIAL_TASKS, mergeBackup } from './model.js?v=20261001-ledger';
+import { clone, INITIAL_TASKS, mergeBackup } from './model.js?v=20261001-diary';
 import { normalizeLedger, withRecord, recordWarnings } from './ledger-model.js?v=20261001-ledger';
+import { normalizeDiary, updateDiary, removeDiary } from './diary-model.js?v=20261001-diary';
 const DB_NAME = 'personal-learning-system';
 const DB_VERSION = 1;
 const STORES = ['templates', 'days', 'sessions', 'meta'];
@@ -38,7 +39,7 @@ export async function claimTimer(timer) {
   });
 }
 function snapshot(rows) {
-  return { templates: rows.templates, days: rows.days, sessions: rows.sessions, timer: rows.meta.find(r => r.id === 'timer')?.value || null, ledger: normalizeLedger(rows.meta.find(r => r.id === 'ledger')?.value), settings: { timezone: 'Asia/Shanghai' } };
+  return { templates: rows.templates, days: rows.days, sessions: rows.sessions, timer: rows.meta.find(r => r.id === 'timer')?.value || null, ledger: normalizeLedger(rows.meta.find(r => r.id === 'ledger')?.value), diary: normalizeDiary(rows.meta.find(r => r.id === 'diary')?.value), settings: { timezone: 'Asia/Shanghai' } };
 }
 export async function exportAll() {
   const db = await openDB();
@@ -61,11 +62,12 @@ async function restoreBackup(data, merge) {
         if (--remaining) return;
         try {
           const current = snapshot(rows);
-          const next = merge ? mergeBackup(current, data) : { ...data, sessions: data.sessions ?? current.sessions, timer: data.timer === undefined ? current.timer : data.timer, ledger: data.ledger === undefined ? current.ledger : normalizeLedger(data.ledger) };
+          const next = merge ? mergeBackup(current, data) : { ...data, sessions: data.sessions ?? current.sessions, timer: data.timer === undefined ? current.timer : data.timer, ledger: data.ledger === undefined ? current.ledger : normalizeLedger(data.ledger), diary: data.diary === undefined ? current.diary : normalizeDiary(data.diary) };
           for (const store of ['templates', 'days', 'sessions']) { const target = tx.objectStore(store); target.clear(); for (const row of next[store]) target.put(clone(row)); }
           const meta = tx.objectStore('meta');
           meta.put({ id: 'timer', value: clone(next.timer || null) });
           meta.put({ id: 'ledger', value: clone(next.ledger) });
+          meta.put({ id: 'diary', value: clone(next.diary) });
         } catch (error) { failure = error; tx.abort(); }
       };
     }
@@ -75,6 +77,23 @@ async function restoreBackup(data, merge) {
 }
 export const replaceAll = data => restoreBackup(data, false);
 export const importMerged = data => restoreBackup(data, true);
+export const getDiary = () => get('meta', 'diary').then(row => normalizeDiary(row?.value));
+async function changeDiary(change) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('meta', 'readwrite'), meta = tx.objectStore('meta'); let result, failure;
+    const req = meta.get('diary');
+    req.onsuccess = () => {
+      try { result = normalizeDiary(change(normalizeDiary(req.result?.value))); meta.put({ id: 'diary', value: clone(result) }); }
+      catch (error) { failure = error; tx.abort(); }
+    };
+    tx.oncomplete = () => { db.close(); resolve(result); };
+    tx.onabort = tx.onerror = () => { db.close(); reject(failure || tx.error || new Error('日记保存失败')); };
+  });
+}
+export const saveDiaryDraft = draft => changeDiary(current => updateDiary(current, 'drafts', draft));
+export const saveDiaryEntry = entry => changeDiary(current => updateDiary(current, 'entries', entry));
+export const deleteDiary = date => changeDiary(current => removeDiary(current, date));
 export const getLedger = () => get('meta', 'ledger').then(row => normalizeLedger(row?.value));
 async function updateLedger(change) {
   const db = await openDB();
