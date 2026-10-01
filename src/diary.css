@@ -6,3 +6,6 @@
 @media(max-width:1180px){.app-shell.diary-mode{grid-template-columns:84px minmax(0,1fr)}}
 @media(max-width:900px){.app-shell.diary-mode{display:block}.app-shell.diary-mode .sidebar{top:0;bottom:auto}.diary-page{padding:16px 14px max(24px,env(safe-area-inset-bottom))}.diary-page .topbar{align-items:center;flex-wrap:wrap}}
 @media(max-width:600px){.diary-day{height:55px;flex-direction:column;gap:0;font-size:12px}.diary-day .diary-face,.diary-no-mood{height:27px;width:27px}.diary-monthbar{gap:4px}.diary-monthbar h2{font-size:15px}.diary-monthbar .secondary{padding:0 8px}.diary-moods{grid-template-columns:repeat(5,minmax(0,1fr))}.diary-life{grid-template-columns:1fr}.diary-life span{display:inline;margin-left:8px}.diary-favorite{margin-left:0}.diary-editor{padding:10px}.diary-editor-head label{font-size:0}.diary-actions{gap:4px}.diary-actions .secondary,.diary-actions .primary{padding:0 8px;font-size:14px}}
+
+/* Keep reference PNGs within the same icon boxes without stretching their crops. */
+img.diary-face{object-fit:contain}
