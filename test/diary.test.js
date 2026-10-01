@@ -17,7 +17,7 @@ test('评分 0 与空值分开；心情及 Yes/Or/No 均可不选，不自动换
   assert.equal(entryToDraft(make('2026-10-01', { scoreText: '0' })).scoreText, '0');
   assert.equal(entryToDraft(make('2026-10-01')).scoreText, '');
   assert.equal(MOODS.length, 9); assert.equal(new Set(MOODS.map(m => m.id)).size, 9);
-  assert.equal(moodSVG(null), ''); assert.match(moodSVG('alive'), /<svg/);
+  assert.equal(moodSVG(null), ''); assert.match(moodSVG('alive'), /<img/);
 });
 test('不同日期草稿隔离；未完成评分和取消选择原样保留', () => {
   const first = { ...blankDraft('2026-10-01'), body: randomUUID(), scoreText: '101' };

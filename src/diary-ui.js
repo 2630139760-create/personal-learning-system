@@ -1,7 +1,7 @@
 import * as db from './storage.js?v=20261001-diary';
 import { beijingToday, validDate } from './ledger-model.js?v=20261001-ledger';
 import { blankDraft, entryToDraft, draftToEntry, findDiary, monthCells } from './diary-model.js?v=20261001-diary';
-import { MOODS, moodSVG } from './diary-moods.js?v=20261001-moods-reference';
+import { MOODS, moodSVG } from './diary-moods.js?v=20261001-moods-png';
 import { activatePage, registerLeaveGuard } from './navigation.js?v=20261001-diary';
 
 const $ = s => document.querySelector(s);

@@ -1,5 +1,5 @@
 import { initLedger } from './ledger-ui.js?v=20261001-diary';
-import { initDiary } from './diary-ui.js?v=20261001-moods-reference';
+import { initDiary } from './diary-ui.js?v=20261001-moods-png';
 import { flushPendingEdits } from './navigation.js?v=20261001-diary';
 import { STATUS, calculateStats, conflictsFor, effectiveTemplate, isStudy, plannedSeconds, taskActualSeconds, clone, formatDuration, sortTasks, validTaskTime, timerElapsed, reconcileTemplateDay, STUDY_MODULES } from './model.js?v=20261001-diary';
 import * as db from './storage.js?v=20261001-diary';
