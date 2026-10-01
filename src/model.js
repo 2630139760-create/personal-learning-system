@@ -1,3 +1,4 @@
+import { mergeLedger } from './ledger-model.js?v=20261001-ledger';
 export const STUDY_MODULES = ['化妆', '剪辑', '调色', '英语／雅思', 'AI', '拍摄'];
 export const STATUS = { todo: '未完成', done: '已完成', improve: '待完善' };
 export const EXECUTION_PRIORITY = [['化妆'], ['剪辑', '调色'], ['英语／雅思'], ['AI'], ['拍摄']];
@@ -39,7 +40,7 @@ export function effectiveTemplate(templates, date) {
 export function mergeBackup(current, incoming) {
   // Load the backup first so an identical local ID wins; merge must never silently overwrite local edits.
   const unique = (a, b, key) => [...new Map([...b, ...a].map(x => [x[key], x])).values()];
-  return { templates: unique(current.templates, incoming.templates || [], 'id'), days: unique(current.days, incoming.days || [], 'date'), sessions: unique(current.sessions, incoming.sessions || [], 'id'), timer: current.timer || incoming.timer || null, settings: { ...incoming.settings, ...current.settings } };
+  return { templates: unique(current.templates, incoming.templates || [], 'id'), days: unique(current.days, incoming.days || [], 'date'), sessions: unique(current.sessions, incoming.sessions || [], 'id'), timer: current.timer || incoming.timer || null, settings: { ...incoming.settings, ...current.settings }, ledger: mergeLedger(current.ledger, incoming.ledger) };
 }
 
 export function formatDuration(seconds) {

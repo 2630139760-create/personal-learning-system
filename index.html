@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#f3f5f8" />
   <title>今日计划 · 个人学习系统</title>
-  <link rel="stylesheet" href="./src/styles.css?v=20260930-hotfix" />
+  <link rel="stylesheet" href="./src/styles.css?v=20261001-ledger" />
+  <link rel="stylesheet" href="./src/ledger.css?v=20261001-ledger" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -14,14 +15,14 @@
       <nav aria-label="主要导航">
         <button class="nav-item active" data-page="today"><span>◉</span> 今日</button>
         <button class="nav-item" data-later="学习"><span>◇</span> 学习 <small>后续接入</small></button>
-        <button class="nav-item" data-later="账本"><span>□</span> 账本 <small>后续接入</small></button>
+        <button class="nav-item" data-page="ledger"><span>□</span> 账本</button>
         <button class="nav-item" data-later="日记"><span>◌</span> 日记 <small>后续接入</small></button>
         <button class="nav-item" id="settingsBtn"><span>⚙</span> 设置</button>
       </nav>
       <div class="sync-note"><span class="status-dot"></span><div><b>仅此设备</b><small>跨设备同步后续接入</small></div></div>
     </aside>
 
-    <main class="main-panel">
+    <main class="main-panel" id="todayPage">
       <header class="topbar">
         <div><p class="eyebrow" id="weekday">今天</p><h1 id="dateTitle">今日计划</h1></div>
         <div class="date-actions">
@@ -82,9 +83,9 @@
 
   <dialog id="settingsDialog"><div class="dialog-head"><div><p class="eyebrow">数据与设置</p><h2>本地数据</h2></div><button class="icon-btn" onclick="this.closest('dialog').close()">×</button></div>
     <section class="setting-card"><h3>设备能力</h3><p><b>设备通知尚未启用</b><br><span class="muted">当前只保存提醒开关和时间，关闭页面或锁屏后不会收到通知。</span></p><p><b>跨设备同步后续接入</b><br><span class="muted">目前数据仅保存在此浏览器。</span></p></section>
-    <section class="setting-card"><h3>数据备份</h3><p class="muted">导出包含模板、每日任务和计时记录。导入前会让你选择合并或替换，不会静默覆盖。</p><div class="button-row"><button class="secondary" id="exportBtn">导出 JSON</button><label class="secondary file-btn">选择备份文件<input id="importFile" type="file" accept="application/json" /></label></div><div id="importChoice" class="hidden import-choice"><b>已读取备份。如何恢复？</b><div class="button-row"><button class="secondary" id="mergeImport">合并（推荐）</button><button class="danger" id="replaceImport">替换全部</button></div></div></section>
+    <section class="setting-card"><h3>数据备份</h3><p class="muted">导出包含模板、每日任务、计时记录、账本分类、收支和小荷包存入。导入前会让你选择合并或替换，不会静默覆盖。</p><p id="backupError" class="persistent-error hidden" role="alert"></p><div class="button-row"><button class="secondary" id="exportBtn">导出 JSON</button><label class="secondary file-btn">选择备份文件<input id="importFile" type="file" accept="application/json" /></label></div><div id="importChoice" class="hidden import-choice"><b>已读取备份。如何恢复？</b><div class="button-row"><button class="secondary" id="mergeImport">合并（推荐）</button><button class="danger" id="replaceImport">替换全部</button></div></div></section>
     <section class="setting-card"><h3>排序规则（独立保存）</h3><p><b>执行优先级</b><br><span class="muted">化妆 ＞ 剪辑与调色 ＞ 英语／雅思 ＞ AI ＞ 拍摄</span></p><p><b>长期掌握深度</b><br><span class="muted">AI ＞ 调色 ＞ 化妆 ＞ 英语 ＞ 剪辑 ＞ 拍摄</span></p><p class="muted">时间表始终按实际时间排列，不会按优先级重排。</p></section>
   </dialog>
-  <script type="module" src="./src/app.js?v=20260930-template-sync" onerror="const banner=document.getElementById('banner');banner.className='banner error';banner.innerHTML='页面脚本加载失败，请检查网络后重试。 <button type=&quot;button&quot; onclick=&quot;location.reload()&quot;>重新加载</button>'"></script>
+  <script type="module" src="./src/app.js?v=20261001-ledger" onerror="const banner=document.getElementById('banner');banner.className='banner error';banner.innerHTML='页面脚本加载失败，请检查网络后重试。 <button type=&quot;button&quot; onclick=&quot;location.reload()&quot;>重新加载</button>'"></script>
 </body>
 </html>
